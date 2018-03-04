@@ -13,7 +13,9 @@ library(readr)
 library(plyr)
 library(plotly)
 
+
 source('exploration.R')
+
 
 # Define UI for application that draws a histogram
 shinyUI(fluidPage(
@@ -29,12 +31,14 @@ shinyUI(fluidPage(
                   'Time of Year:',
                   choices = c("Spring", "Summer", "Fall"),
                   selected = c("Spring", "Summer", "Fall"),
-                  multiple = TRUE),
-      checkboxGroupInput("month",
+                  multiple = TRUE,
+                  selectize = FALSE),
+      selectInput("month",
                    "Month:",
                    choices = c("March", "April", "May", "June", "July", "August", "September", "October", "November"),
                    selected = c("March", "April", "May", "June", "July", "August", "September", "October", "November"),
-                   inline = TRUE),
+                   multiple = TRUE,
+                  selectize = FALSE),
       checkboxGroupInput("balls",
                   "Ball Count:",
                   choices = c(0,1,2,3),
@@ -88,9 +92,10 @@ shinyUI(fluidPage(
     
     # Show a plot of the generated distribution
     mainPanel(
-      plotlyOutput("strikezonePlot"),
-      #plotlyOutput("launchPlot"),
-      plotlyOutput("spraychartPlot")
+      plotlyOutput("strikezonePlot", height = '300px', width = '350px'),
+      plotlyOutput("launchPlot", height = '300px', width = '300px'),
+      img(src = 'anthony-rizzo.png'),
+      plotlyOutput("spraychartPlot", height = '300px', width = '300px')
     )
   )
 ))

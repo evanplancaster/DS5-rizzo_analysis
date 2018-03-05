@@ -36,7 +36,8 @@ shinyServer(function(input, output, session) {
             p_throws %in% input$pitcher_hand,
             pitch_name %in% input$pitch_name,
             month %in% input$month,
-            season %in% input$season
+            year %in% input$year
+            #season %in% input$season
             #onbase %in% input$
       )
   })
@@ -74,14 +75,14 @@ shinyServer(function(input, output, session) {
   output$strikezonePlot <- renderPlotly({
     
     p <- datasetInput() %>% 
-      ggplot(aes(x = plate_x, y = plate_z, color = pitch_category, 
+      ggplot(aes(x = plate_x, y = plate_z, color = take_or_swing, 
                  text = sprintf('<b>Launch Angle:</b> %.1f\n<b>Exit Velocity:</b> %.1f\n<b>Outcome: %s</b>',
                                 round(launch_angle, 1), round(launch_speed, 1), description)))  +
       #geom_circle(aes(x0 = 0, y0 = 0, r = 50, fill = 'blue', alpha = 0.1), show.legend = FALSE) +
-      geom_rect(aes(xmin = -1, xmax = 1, ymin = 1.5, ymax = 3.5), color = 'red') +
       geom_point(aes(alpha = 0.2), show.legend = FALSE) +
       #  legend(legend = pitch_category) +
       #geom_segment(aes(x = hit_x_coord, y = hit_y_coord, xend = 0, yend = 0, alpha = 0.1)) +
+      geom_rect(aes(xmin = -1, xmax = 1, ymin = 1.5, ymax = 3.5), color = 'white', fill = NA) +
       xlim(-3, 3) +
       ylim(-2, 6) +
       coord_fixed()

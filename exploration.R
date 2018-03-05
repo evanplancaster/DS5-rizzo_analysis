@@ -77,7 +77,11 @@ rizzo_df <- rizzo_df %>%
          month = format(game_date, '%B'),
          year = format(game_date, '%Y')) %>% 
   mutate(season = mapvalues(month, c("March", "April", "May", "June", "July", "August", "September", "October", "November"),
-                            c("Spring", "Spring", "Spring", "Summer", "Summer", "Summer", "Fall", "Fall", "Fall")))
+                            c("Spring", "Spring", "Spring", "Summer", "Summer", "Summer", "Fall", "Fall", "Fall")),
+          take_or_swing = mapvalues(description, c('called_strike', 'ball', 'blocked_ball', 'hit_by_pitch', 'intent_ball', 'pitchout', 'automatic_ball', 'hit_into_play', 'hit_into_play_score', 'swinging_strike', 'foul', 'foul_tip', 'hit_into_play_no_out', 'swinging_strike_blocked', 'missed_bunt', 'foul_bunt'), 
+                                   c('take', 'take', 'take', 'take', 'take', 'take', 'take', 'swing', 'swing', 'swing', 'swing', 'swing', 'swing', 'swing', 'swing', 'swing')))
+          # take_or_swing = mapvalues(description, c('hit_into_play', 'hit_into_play_score', 'swinging_strike', 'foul', 'foul_tip', 'hit_into_play_no_out', 'swinging_strike_blocked', 'missed_bunt', 'foul_bunt'), 
+          #                   c('swing', 'swing', 'swing', 'swing', 'swing', 'swing', 'swing', 'swing', 'swing'))) 
 
 # p <- rizzo_df %>%
 #   #filter(pitch_type == 'CU', launch_speed == 113.6, launch_angle == 17.5950) %>%

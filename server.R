@@ -218,6 +218,31 @@ shinyServer(function(input, output, session) {
     #   
     # })
     
+    #Calculate swing_rate
+    swing_count <- reactive({
+      datasetInput()$data %>% 
+        filter(contact_info != 'take') %>% 
+        summarise(swing_count = n())
+    })
+    
+    pitch_count <- reactive({datasetInput()$data %>% 
+        summarise(pitch_count = n())
+    })
+    
+    contact_count <- reactive({
+      datasetInput()$data %>% 
+        filter(contact_info == 'contact') %>% 
+        summarise(contact_count = n())
+    })
+    
+    output$swing_rate <- renderText({
+      paste("Swing Rate: ", round(swing_count()/pitch_count()*100, 2), '%')
+    })
+    
+    output$contact_rate <- renderText({
+      paste("Contact Rate: ", round(contact_count()/swing_count()*100, 2), '%')
+    })
+    
     session$onSessionEnded(stopApp)
 })
 

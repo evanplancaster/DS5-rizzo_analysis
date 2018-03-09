@@ -170,7 +170,17 @@ shinyUI(fluidPage(
     
     # Show a plot of the generated distribution
     mainPanel(
-      plotlyOutput("strikezonePlot", height = '300px', width = '375px'),
+      fluidRow(
+        column(
+          plotlyOutput("strikezonePlot", height = '300px', width = '375px'),
+          width = 6
+          ),
+        column(
+          textOutput('swing_rate'),
+          textOutput('contact_rate'),
+          width = 6
+        )
+      ),
       plotlyOutput("launchPlot", height = '300px', width = '500px'),
       #img(src = 'anthony-rizzo.png'),
       plotlyOutput("spraychartPlot", height = '300px', width = '375px'),

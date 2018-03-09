@@ -24,9 +24,11 @@ shinyUI(fluidPage(
   titlePanel("Rizzo Analysis"),
   
   # Sidebar with a slider input 
-  sidebarLayout(
+  fluidRow(
     sidebarPanel(
-      h3('Game Info'),
+      h2('Pitching Info'),
+      hr(),
+      h3('Game Scenario'),
       # selectInput('season',
       #             'Time of Year:',
       #             choices = c("Spring", "Summer", "Fall"),
@@ -47,9 +49,9 @@ shinyUI(fluidPage(
         column(
           width = 6,
           selectInput('year',
-                      "Year",
-                      choices = unique(rizzo_df$year),
-                      selected = unique(rizzo_df$year),
+                      "Year:",
+                      choices = seq(max(rizzo_df$game_year, na.rm = TRUE), min(rizzo_df$game_year, na.rm = TRUE), -1),
+                      selected = seq(max(rizzo_df$game_year, na.rm = TRUE), min(rizzo_df$game_year, na.rm = TRUE), -1),
                       multiple = TRUE,
                       selectize = FALSE,
                       width = '200px')
@@ -88,14 +90,30 @@ shinyUI(fluidPage(
                       width = '200px')
         )
       ),
-      selectInput("inning",
-                   "Inning:",
-                   choices = c(1,2,3,4,5,6,7,8,9),
-                   selected = c(1,2,3,4,5,6,7,8,9),
-                   multiple = TRUE,
-                  selectize = FALSE,
-                  width = '200px',
-                  size = 4),
+      fluidRow(
+        column(
+          width = 6,
+          selectInput("homeaway",
+                      "Top/Bottom:",
+                      choices = c('Top', 'Bottom' = 'Bot'),
+                      selected = c('Top', 'Bot'),
+                      multiple = TRUE,
+                      selectize = FALSE,
+                      width = '200px',
+                      size = 4)
+        ),
+        column(
+          width = 6,
+          selectInput("inning",
+                      "Inning:",
+                      choices = c(1,2,3,4,5,6,7,8,9),
+                      selected = c(1,2,3,4,5,6,7,8,9),
+                      multiple = TRUE,
+                      selectize = FALSE,
+                      width = '200px',
+                      size = 4)  
+        )
+      ),
       # checkboxGroupInput("onbase",
       #              "Runners On Base:",
       #              choices = c("1st" = 1, "2nd" = 2, "3rd" = 3),
@@ -106,20 +124,21 @@ shinyUI(fluidPage(
       selectInput("pitcher_hand",
                   "Left/Right-Handed:",
                   choices = c("Right" = "R", "Left" = "L"),
-                  selected = "L",
+                  selected = c("L","R"),
                   multiple = TRUE,
                   selectize = FALSE,
                   width = '200px'),
       hr(),
-      h3('Pitch Info'),
+      h3('Pitch Selection'),
       fluidRow(
         column(
           width = 6,
           selectInput("pitch_name",
                       "Pitch Type",
-                      choices = unique(rizzo_df$pitch_name),
-                      selected = unique(rizzo_df$pitch_name),
+                      choices = na.exclude(unique(rizzo_df$pitch_name)),
+                      selected = na.exclude(unique(rizzo_df$pitch_name)),
                       multiple = TRUE,
+                      selectize = FALSE,
                       #size = 3,
                       width = '200px')
         ),
@@ -136,19 +155,72 @@ shinyUI(fluidPage(
                       min = min(rizzo_df$release_spin_rate, na.rm = TRUE),
                       max = max(rizzo_df$release_spin_rate, na.rm = TRUE),
                       value = c(min(rizzo_df$release_spin_rate, na.rm = TRUE), max(rizzo_df$release_spin_rate, na.rm = TRUE)),
+                      width = '200px'),
+          selectInput('strikezone',
+                      'Strike Zone Location:',
+                      choices = c(1,2,3,4,5,6,7,8,9,11,12,13,14),
+                      selected = c(0,1,2,3,4,5,6,7,8,9,11,12,13,14),
+                      selectize = FALSE,
+                      multiple = TRUE,
                       width = '200px')
         )
       ),
-      width = 4
+      width = 3
     ),    
     
     # Show a plot of the generated distribution
     mainPanel(
       plotlyOutput("strikezonePlot", height = '300px', width = '375px'),
-      plotlyOutput("launchPlot", height = '300px', width = '375px'),
+      plotlyOutput("launchPlot", height = '300px', width = '500px'),
       #img(src = 'anthony-rizzo.png'),
       plotlyOutput("spraychartPlot", height = '300px', width = '375px'),
-      width = 8
+      width = 6
+    ),
+    
+    sidebarPanel(
+      h2('Outcomes Info'),
+      hr(),
+      h3('Contact Info'),
+      selectInput('contact_info',
+                  'Take/Swing/Contact',
+                  choices = c('take', 'missed swing', 'foul', 'contact'),
+                  selected = c('take', 'missed swing', 'foul', 'contact'),
+                  multiple = TRUE,
+                  selectize = FALSE,
+                  width = '200px'),
+      hr(),
+      h3('Launch Info'),
+      selectInput('ball_flight',
+                  'Ball Flight',
+                  choices = c('Barrel' = 6, 'Solid Contact' = 5, 'Flare/Burner' = 4, 'Poor Contact/Underneath' = 3, 'Poor Contact/Topped' = 2, 'Weak Contact' = 1, 'No Contact' = 0),
+                  selected = c(0, 1, 2, 3, 4, 5, 6),
+                  multiple = TRUE,
+                  selectize = FALSE,
+                  width = '200px'),
+      hr(),
+      h3('Field Placement'),
+      # selectInput('field_zone',
+      #             'Area of Field',
+      #             choices = c(0,1,2,3,4,5,6,7,8,9),
+      #             selected = c(0,1,2,3,4,5,6,7,8,9),
+      #             multiple = TRUE,
+      #             selectize = FALSE,
+      #             width = '200px'),
+      selectInput("spray_angle_cat",
+                  "Spray Angle:",
+                  choices = c('Opposite Field', 'Straight-Away', 'Pulled', 'No Contact' = NA),
+                  selected = c('Opposite Field', 'Straight-Away', 'Pulled', NA),
+                  multiple = TRUE,
+                  selectize = FALSE,
+                  width = '200px'),
+      selectInput("infield_outfield",
+                  'Depth:',
+                  choices = c('Infield', 'Outfield', 'No Contact' = NA),
+                  selected = c('Infield', 'Outfield', NA),
+                  multiple = TRUE,
+                  selectize = FALSE,
+                  width = '200px'),
+      width = 3
     )
   )
 ))

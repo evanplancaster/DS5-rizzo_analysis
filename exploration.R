@@ -33,6 +33,12 @@ pitcher_ids_df <- read_csv('data/pitcher_ids.csv') %>%
 # Read in pitches file (source: Baseball Savant)
 rizzo_df <- read_csv('data/rizzo_pitches.csv', na = c('null', ''))
 
+#functions for barrels
+launch_vel_comp <- function(x){1.84*pnorm(x+1, 98, 9)}
+launch_angle_comp <- function(x){dnorm(x = x, mean = 29, sd = 11)/dnorm(x = 29, mean = 29, sd = 11)}
+barrel <- function(angle, vel){launch_angle_comp(angle) * launch_vel_comp(vel)}
+
+
 # Create Crosswalk to decode and classify pitches
 pitch_type_crosswalk <- data.frame(pitch_type = unique(rizzo_df$pitch_type), 
                                    pitch_name = c('Cut Fastball', '4-Seam Fastball', 'Slider', 'Curveball', '2-Seam Fastball', 'Changeup', 'Knuckle-Curve', 'Sinker', NULL, 'Split-Finger Fastball', 'Knuckleball', 'Forkball', 'Intentional Ball', NA, 'Eephus', '4-Seam Fastball', 'Screwball', 'Pitchout'),
@@ -45,7 +51,7 @@ game_type_crosswalk <- data.frame(game_type = unique(rizzo_df$game_type),
 # Merge event dataframe with crosswalk
 rizzo_df <- rizzo_df %>% 
   mutate(hc_x = hc_x - 125.42, hc_y = 198.27 - hc_y) %>% 
-  #mutate(spray_angle = -1 * atan(hc_x / hc_y)) %>% 
+  mutate(spray_angle = round(atan(hc_x / hc_y) * 180 / pi), 2) %>% 
   mutate(launch_z = launch_speed * sin(launch_angle*pi/180)) %>% 
   merge(pitch_type_crosswalk) %>% 
   merge(game_type_crosswalk) %>% 
@@ -78,8 +84,19 @@ rizzo_df <- rizzo_df %>%
          year = format(game_date, '%Y')) %>% 
   mutate(season = mapvalues(month, c("March", "April", "May", "June", "July", "August", "September", "October", "November"),
                             c("Spring", "Spring", "Spring", "Summer", "Summer", "Summer", "Fall", "Fall", "Fall")),
-          take_or_swing = mapvalues(description, c('called_strike', 'ball', 'blocked_ball', 'hit_by_pitch', 'intent_ball', 'pitchout', 'automatic_ball', 'hit_into_play', 'hit_into_play_score', 'swinging_strike', 'foul', 'foul_tip', 'hit_into_play_no_out', 'swinging_strike_blocked', 'missed_bunt', 'foul_bunt'), 
-                                   c('take', 'take', 'take', 'take', 'take', 'take', 'take', 'swing', 'swing', 'swing', 'swing', 'swing', 'swing', 'swing', 'swing', 'swing')))
+          contact_info = mapvalues(description, c('called_strike', 'ball', 'blocked_ball', 'hit_by_pitch', 'intent_ball', 'pitchout', 'automatic_ball', 'hit_into_play', 'hit_into_play_score', 'swinging_strike', 'foul', 'foul_tip', 'hit_into_play_no_out', 'swinging_strike_blocked', 'missed_bunt', 'foul_bunt'), 
+                                   c('take', 'take', 'take', 'take', 'take', NA, 'take', 'contact', 'contact', 'missed swing', 'foul', 'foul', 'contact', 'missed swing', 'missed swing', 'foul')),
+          launch_angle_comp = launch_angle_comp(launch_angle),
+          launch_vel_comp = launch_vel_comp(launch_speed),
+          barreled_ball = pmin(launch_angle_comp * launch_vel_comp, 1),
+          infield_outfield = cut(rizzo_df$hit_distance_sc, c(-Inf,110,Inf), c('Infield', 'Outfield')),
+         spray_angle_cat = cut(rizzo_df$spray_angle, c(-Inf,-22.5, 22.5, Inf), c('Opposite Field', 'Straight-Away', 'Pulled')))
+
+#Fill in NAs with 0
+rizzo_df$launch_speed_angle[is.na(rizzo_df$launch_speed_angle)] <- 0
+rizzo_df$hit_location[is.na(rizzo_df$hit_location)] <- 0
+
+
           # take_or_swing = mapvalues(description, c('hit_into_play', 'hit_into_play_score', 'swinging_strike', 'foul', 'foul_tip', 'hit_into_play_no_out', 'swinging_strike_blocked', 'missed_bunt', 'foul_bunt'), 
           #                   c('swing', 'swing', 'swing', 'swing', 'swing', 'swing', 'swing', 'swing', 'swing'))) 
 

@@ -23,20 +23,17 @@ source('exploration.R')
 
 # Define server logic required to draw a histogram
 shinyServer(function(input, output, session) {
-    # tmp <- rizzo_df
-    # sel <- NULL
-    # 
-    # selected <- reactive({
-    #   event_data('plotly_selected')
-    # })
-    # 
+    tmp <- rizzo_df
+    sel <- NULL
+    
+    selected <- reactive({
+      event_data('plotly_selected')
+    })
+    
     datasetInput <- reactive({
-      #tmp <- tmp %>% 
-      tmp <- rizzo_df %>% 
+      tmp <- tmp %>% 
         filter(between(release_speed, input$release_speed[1], input$release_speed[2]),
-               #between(spray_angle, input$spray_angle[1], input$spray_angle[2]),
               between(release_spin_rate, input$release_spin_rate[1], input$release_spin_rate[2]),
-              #between(hit_distance_sc, input$hit_distance_sc[1], input$hit_distance_sc[2]),
               strikes %in% input$strikes, 
               balls %in% input$balls,
               outs_when_up %in% input$outs,
@@ -45,21 +42,12 @@ shinyServer(function(input, output, session) {
               p_throws %in% input$pitcher_hand,
               pitch_name %in% input$pitch_name,
               month %in% input$month,
-              year %in% input$year,
-              contact_info %in% input$contact_info,
-              launch_speed_angle %in% input$ball_flight,
-              #hit_location %in% input$field_zone,
-              zone %in% input$strikezone,
-              infield_outfield %in% input$infield_outfield,
-              spray_angle_cat %in% input$spray_angle_cat
-              )
+              year %in% input$year)
               
               #onbase %in% input$
-      #sel <- tryCatch(tmp[(selected()$pointNumber+1),,drop=FALSE], error = function(e){NULL})
+      sel <- tryCatch(tmp[(selected()$pointNumber+1),,drop=FALSE], error = function(e){NULL})
       
-      list(data = tmp
-           #, sel = sel
-           )
+      list(data = tmp, sel = sel)
     })
     
     
@@ -90,14 +78,15 @@ shinyServer(function(input, output, session) {
         coord_fixed() +
         theme_bw()
       
-      #obj <- datasetInput()$sel
-      #obj
+      obj <- datasetInput()$sel
+      obj
       
-      # if(nrow(obj)!=0) {
-      #   p <- p + geom_point(data = obj, size = 4)
-      # }
+      if(nrow(obj)!=0) {
+        p <- p + geom_point(data = obj, size = 4)
+      }
     
-      ggplotly(p, tooltip = "text")
+      ggplotly(p, tooltip = "text") %>% 
+        layout(dragmode = 'lasso') 
     })
     
     output$strikezonePlot <- renderPlotly({
@@ -113,19 +102,20 @@ shinyServer(function(input, output, session) {
       # }  
       # 
       #strikezone box
-      sz_box <- data.frame(vert_x = c(-0.839, -0.839 + 1.678/3, -.839+2*1.678/3, 0.839), 
-                           vert_y = c(1.52, 1.52, 1.52, 1.52), 
-                           vert_xend = c(-0.839, -0.839 + 1.678/3, -.839+2*1.678/3, 0.839),
-                           vert_yend = c(3.52, 3.52, 3.52, 3.52), 
-                           hor_x = c(-0.839, -0.839, -0.839, -0.839), 
-                           hor_y = seq(1.52, 3.52, 2/3), 
-                           hor_xend = c(0.839, 0.839, 0.839, 0.839), 
-                           hor_yend = seq(1.52, 3.52, 2/3))
+      sz_box <- data.frame(vert_x = seq(-1, 1, 2/3), 
+                           vert_y = c(1.5, 1.5, 1.5, 1.5), 
+                           vert_xend = seq(-1, 1, 2/3), 
+                           vert_yend = c(3.5, 3.5, 3.5, 3.5), 
+                           hor_x = c(-1, -1, -1, -1), 
+                           hor_y = seq(1.5, 3.5, 2/3), 
+                           hor_xend = c(1, 1, 1, 1), 
+                           hor_yend = seq(1.5, 3.5, 2/3))
       
-      p <- ggplot(data = datasetInput()$data, aes(x = plate_x, y = plate_z, color = contact_info, alpha = 0.2))  +
+      p <- ggplot(data = datasetInput()$data, aes(x = plate_x, y = plate_z, color = take_or_swing, alpha = 0.2)) +#, 
+                                                  #text = sprintf('<b>Launch Angle:</b> %.1f\n<b>Exit Velocity:</b> %.1f\n<b>Outcome: %s</b>',
+                                                                 #round(launch_angle, 1), round(launch_speed, 1), description)))  +
         #geom_circle(aes(x0 = 0, y0 = 0, r = 50, fill = 'blue', alpha = 0.1), show.legend = FALSE) +
-        geom_point(aes(text = sprintf('<b>Launch Angle:</b> %.1f\n<b>Exit Velocity:</b> %.1f\n<b>Outcome: %s</b>',
-                                      round(launch_angle, 1), round(launch_speed, 1), description))) +
+        geom_point() +
         #  legend(legend = pitch_category) +
         geom_segment(data = sz_box, aes(x = vert_x, y = vert_y, xend = vert_xend, yend = vert_yend, color = I('white')), showlegend = FALSE) +
         geom_segment(data = sz_box, aes(x = hor_x, y = hor_y, xend = hor_xend, yend = hor_yend, color = I('white')), showlegend = FALSE) +
@@ -135,15 +125,15 @@ shinyServer(function(input, output, session) {
         coord_fixed() +
         theme_bw()
       
-        # obj <- datasetInput()$sel
-        # obj
-        # 
-        # if(nrow(obj)!=0) {
-        #   p <- p + geom_point(data = obj, size = 4)
-        # }
+        obj <- datasetInput()$sel
+        obj
         
-        ggplotly(p, tooltip = 'text') #%>%
-          #layout(dragmode = 'lasso')
+        if(nrow(obj)!=0) {
+          p <- p + geom_point(data = obj, size = 4)
+        }
+        
+        ggplotly(p, tooltip = 'text') %>%
+          layout(dragmode = 'lasso')
   
       
       
@@ -178,18 +168,20 @@ shinyServer(function(input, output, session) {
     
     output$spraychartPlot <- renderPlotly({
      # s <- event_data("plotly_selected")
-      # if (length(s$x) == 0) {
-      #   data <- datasetInput()
-      # } else {
-      #   data <- datasetInput() %>% 
-      #     filter(plate_x %in% s$x,
-      #            plate_z %in% s$y)
-      #   
-      #   #cat(str(data))
-      # }  
-      req(datasetInput())
+      if (length(s$x) == 0) {
+        data <- datasetInput()
+      } else {
+        data <- datasetInput() %>% 
+          filter(plate_x %in% s$x,
+                 plate_z %in% s$y)
+        
+        #cat(str(data))
+      }  
       
-      p <- ggplot(data = datasetInput()$data, aes(x = hc_x, y = hc_y, color = bb_type, 
+      
+      p <- data %>% 
+        #ggplot(aes(x = hc_x, y = hc_y, color = bb_type, 
+        ggplot(aes(x = hc_x, y = hc_y, color = bb_type, 
                    text = sprintf('<b>Launch Angle:</b> %.1f\n<b>Exit Velocity:</b> %.1f\n<b>Outcome: %s</b>',
                                   round(launch_angle, 1), round(launch_speed, 1), description)))  +
         #geom_circle(aes(x0 = 0, y0 = 0, r = 50, fill = 'blue', alpha = 0.1), show.legend = FALSE) +
@@ -198,11 +190,10 @@ shinyServer(function(input, output, session) {
         #geom_segment(aes(x = hit_x_coord, y = hit_y_coord, xend = 0, yend = 0, alpha = 0.1)) +
         xlim(min(rizzo_df$hc_x, na.rm = TRUE), max(rizzo_df$hc_x, na.rm = TRUE)) +
         ylim(min(rizzo_df$hc_y, na.rm = TRUE), max(rizzo_df$hc_y, na.rm = TRUE)) +
-        coord_equal() +
-        theme_bw()
+        coord_equal()
       
-      ggplotly(p, tooltip = 'text') #%>% 
-        #layout(dragmode = 'lasso')    
+      ggplotly(p, tooltip = 'text') %>% 
+        layout(dragmode = 'lasso')    
     })  
       
     #   p <- rizzo_df %>% 

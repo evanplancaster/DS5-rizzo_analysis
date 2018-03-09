@@ -26,6 +26,7 @@ shinyUI(fluidPage(
   # Sidebar with a slider input 
   fluidRow(
     sidebarPanel(
+      style = "overflow-y:scroll; max-height: 700px",
       h2('Pitching Info'),
       hr(),
       h3('Game Scenario'),
@@ -172,22 +173,49 @@ shinyUI(fluidPage(
     mainPanel(
       fluidRow(
         column(
-          plotlyOutput("strikezonePlot", height = '300px', width = '375px'),
+          plotlyOutput("strikezonePlot", height = '225px'),
           width = 6
           ),
         column(
+          #NOTE------------think about replacing this with chart of swing rate vs contact rate
+          textOutput('pitch_count'),
+          textOutput('swing_count'),
+          textOutput('contact_count'),
           textOutput('swing_rate'),
           textOutput('contact_rate'),
           width = 6
         )
       ),
-      plotlyOutput("launchPlot", height = '300px', width = '500px'),
+      fluidRow(
+        column(
+          plotlyOutput("launchPlot", height = '225px'),
+          width = 6
+        ),
+        column(
+          #textOutput('barrel_pct'),
+          #NOTE -------------think about putting chart here of pie chart of contact types
+          textOutput('avg_barrel_pct'),
+          textOutput('tango_barrel_rate'),
+          width = 6
+        )
+      ),
+      fluidRow(
+        column(
+          plotlyOutput("spraychartPlot", height = '225px'),
+          width = 6
+        ),
+        column(
+          
+          width = 6
+        )
+      ),
       #img(src = 'anthony-rizzo.png'),
-      plotlyOutput("spraychartPlot", height = '300px', width = '375px'),
+      
       width = 6
     ),
     
     sidebarPanel(
+      style = "overflow-y:scroll; max-height: 700px",
       h2('Outcomes Info'),
       hr(),
       h3('Contact Info'),

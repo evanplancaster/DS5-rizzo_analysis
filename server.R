@@ -239,8 +239,40 @@ shinyServer(function(input, output, session) {
       paste("Swing Rate: ", round(swing_count()/pitch_count()*100, 2), '%')
     })
     
+    output$swing_count <- renderText({
+      paste("# Swings: ", swing_count())
+    })
+    
+    output$pitch_count <- renderText({
+      paste("# Pitches: ", pitch_count())
+    })
+    
+    output$contact_count <- renderText({
+      paste("# Contacts: ", contact_count())
+    })
+    
     output$contact_rate <- renderText({
       paste("Contact Rate: ", round(contact_count()/swing_count()*100, 2), '%')
+    })
+    
+    avg_barrel_pct <- reactive({
+      datasetInput()$data %>% 
+        filter(contact_info == 'contact') %>% 
+        summarise(avg_barrel_pct = round(mean(barreled_ball)*100, 2))
+    })
+    
+    output$avg_barrel_pct <- reactive({
+      paste("Average Barrel %: ", avg_barrel_pct(), '%')
+    })
+    
+    tango_barrel_count <- reactive({
+      datasetInput()$data %>% 
+        filter(launch_speed_angle == 6) %>% 
+        summarise(tango_barrel_count = n())
+    })
+    
+    output$tango_barrel_rate <- reactive({
+      paste("Tango Barrel Rate: ", round(tango_barrel_count()/contact_count()*100, 2), ' / 100 balls in play')
     })
     
     session$onSessionEnded(stopApp)

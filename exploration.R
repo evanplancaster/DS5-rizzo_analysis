@@ -35,7 +35,7 @@ rizzo_df <- read_csv('data/rizzo_pitches.csv', na = c('null', ''))
 
 #functions for barrels
 launch_vel_comp <- function(x){1.84*pnorm(x+1, 98, 9)}
-launch_angle_comp <- function(x){dnorm(x = x, mean = 29, sd = 11)/dnorm(x = 29, mean = 29, sd = 11)}
+launch_angle_comp <- function(x){dnorm(x = x, mean = 30, sd = 11)/dnorm(x = 30, mean = 30, sd = 11)}
 barrel <- function(angle, vel){launch_angle_comp(angle) * launch_vel_comp(vel)}
 
 
@@ -86,8 +86,8 @@ rizzo_df <- rizzo_df %>%
                             c("Spring", "Spring", "Spring", "Summer", "Summer", "Summer", "Fall", "Fall", "Fall")),
           contact_info = mapvalues(description, c('called_strike', 'ball', 'blocked_ball', 'hit_by_pitch', 'intent_ball', 'pitchout', 'automatic_ball', 'hit_into_play', 'hit_into_play_score', 'swinging_strike', 'foul', 'foul_tip', 'hit_into_play_no_out', 'swinging_strike_blocked', 'missed_bunt', 'foul_bunt'), 
                                    c('take', 'take', 'take', 'take', 'take', NA, 'take', 'contact', 'contact', 'missed swing', 'foul', 'foul', 'contact', 'missed swing', 'missed swing', 'foul')),
-          launch_angle_comp = launch_angle_comp(launch_angle),
-          launch_vel_comp = launch_vel_comp(launch_speed),
+          launch_angle_comp = round(launch_angle_comp(launch_angle), 2),
+          launch_vel_comp = round(launch_vel_comp(launch_speed), 2),
           barreled_ball = pmin(launch_angle_comp * launch_vel_comp, 1),
           infield_outfield = as.character(cut(rizzo_df$hit_distance_sc, c(-Inf,110,Inf), c('Infield', 'Outfield'))),
          spray_angle_cat = as.character(cut(rizzo_df$spray_angle, c(-Inf,-22.5, 22.5, Inf), c('Opposite Field', 'Straight-Away', 'Pulled')))) %>% 

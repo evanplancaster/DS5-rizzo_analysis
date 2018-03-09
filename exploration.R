@@ -89,13 +89,14 @@ rizzo_df <- rizzo_df %>%
           launch_angle_comp = launch_angle_comp(launch_angle),
           launch_vel_comp = launch_vel_comp(launch_speed),
           barreled_ball = pmin(launch_angle_comp * launch_vel_comp, 1),
-          infield_outfield = cut(rizzo_df$hit_distance_sc, c(-Inf,110,Inf), c('Infield', 'Outfield')),
-         spray_angle_cat = cut(rizzo_df$spray_angle, c(-Inf,-22.5, 22.5, Inf), c('Opposite Field', 'Straight-Away', 'Pulled')))
+          infield_outfield = as.character(cut(rizzo_df$hit_distance_sc, c(-Inf,110,Inf), c('Infield', 'Outfield'))),
+         spray_angle_cat = as.character(cut(rizzo_df$spray_angle, c(-Inf,-22.5, 22.5, Inf), c('Opposite Field', 'Straight-Away', 'Pulled')))) %>% 
+  replace_na(list(infield_outfield = 'No Contact', spray_angle_cat = 'No Contact'))
+  
 
-#Fill in NAs with 0
+#Fill in NAs with 0 or 'No Contact'
 rizzo_df$launch_speed_angle[is.na(rizzo_df$launch_speed_angle)] <- 0
 rizzo_df$hit_location[is.na(rizzo_df$hit_location)] <- 0
-
 
           # take_or_swing = mapvalues(description, c('hit_into_play', 'hit_into_play_score', 'swinging_strike', 'foul', 'foul_tip', 'hit_into_play_no_out', 'swinging_strike_blocked', 'missed_bunt', 'foul_bunt'), 
           #                   c('swing', 'swing', 'swing', 'swing', 'swing', 'swing', 'swing', 'swing', 'swing'))) 

@@ -100,7 +100,8 @@ shinyServer(function(input, output, session) {
       #   p <- p + geom_point(data = obj, size = 4)
       # }
     
-      ggplotly(p, tooltip = "text")
+      ggplotly(p, tooltip = "text") %>% 
+        config(displayModeBar = F)
     })
     
     output$strikezonePlot <- renderPlotly({
@@ -131,15 +132,16 @@ shinyServer(function(input, output, session) {
                                       round(launch_angle, 1), round(launch_speed, 1), description))) +
         #  legend(legend = pitch_category) +
         geom_segment(data = sz_box, aes(x = vert_x, y = vert_y, xend = vert_xend, yend = vert_yend, color = I('white')), show.legend = FALSE) +
+        guides(color = 'none') +
         geom_segment(data = sz_box, aes(x = hor_x, y = hor_y, xend = hor_xend, yend = hor_yend, color = I('white')), show.legend = FALSE) +
+        guides(color = 'none') +
         #scale_color_manual(limits = )
         xlim(-3, 3) +
         ylim(-2, 6) +
         coord_fixed() +
         theme_void() +
         ggtitle("Strike Zone Chart (Catcher's Perspective)") + 
-        theme(plot.title = element_text(size = 10, face = 'bold')) +
-        scale_fill_manual(values = c('purple', 'darkred', 'red', 'lightgreen'), limits = c('take', 'missed swing', 'foul', 'contact'))
+        theme(plot.title = element_text(size = 10, face = 'bold'))
       
         # obj <- datasetInput()$sel
         # obj
@@ -151,7 +153,8 @@ shinyServer(function(input, output, session) {
         ggplotly(p, tooltip = 'text') %>%
           layout( 
             legend = list(x = -1, y = 0.95)
-          ) 
+          ) %>% 
+          config(displayModeBar = F)
           
           #layout(dragmode = 'lasso')
         
@@ -232,7 +235,8 @@ shinyServer(function(input, output, session) {
         ggtitle("Spray Chart (Aerial View)") + 
         theme(plot.title = element_text(size = 10, face = 'bold'))
       
-      ggplotly(p, tooltip = 'text') #%>% 
+      ggplotly(p, tooltip = 'text') %>% 
+        config(displayModeBar = F) #%>% 
         #layout(dragmode = 'lasso')    
     })  
       
@@ -271,15 +275,15 @@ shinyServer(function(input, output, session) {
     })
     
     output$swing_count <- renderText({
-      paste("# Swings: ", swing_count())
+      paste("# Swings:\n\n", swing_count())
     })
     
     output$pitch_count <- renderText({
-      paste("# Pitches: ", pitch_count())
+      paste("# Pitches:\n\n", pitch_count())
     })
     
     output$contact_count <- renderText({
-      paste("# Contacts: ", contact_count())
+      paste("# Contacts:\n\n", contact_count())
     })
     
     output$contact_rate <- renderText({
@@ -293,7 +297,7 @@ shinyServer(function(input, output, session) {
     })
     
     output$avg_barrel_pct <- reactive({
-      paste("Average Barrel %: ", avg_barrel_pct(), '%')
+      paste("Average Barrel Percent: ", avg_barrel_pct(), '%')
     })
     
     tango_barrel_count <- reactive({
@@ -315,11 +319,52 @@ shinyServer(function(input, output, session) {
                                             'outs_when_up', 
                                             'pitcher_name', 
                                             'events',
-                                            'description'), 
+                                            'des'), 
                                         drop = FALSE],
                     colnames = c('Game Date','Top/Bottom of Inning', 'Inning', 'Balls', 'Strikes', 'Outs',
                                  'Pitcher', 'Event', 'Description'))
     })
+    
+    output$barrel_bars <- renderPlotly({
+      p <- datasetInput()$data %>% 
+        filter(launch_speed_angle > 0) %>% 
+        group_by(contact_type) %>% 
+        ggplot(aes(x = contact_type)) +
+        geom_bar() +
+        theme_bw() +
+        theme(axis.text.x = element_text(size=7, angle=15)) + 
+        theme(axis.title.x = element_blank()) +
+        theme(axis.title.y = element_blank()) +
+        ggtitle("Frequencies for Contact Types") + 
+        theme(plot.title = element_text(size = 10, face = 'bold'))
+      #+
+       # ggsubtitle("Contact Type")
+      
+      
+      ggplotly(p)  %>% 
+        config(displayModeBar = F)
+    }) 
+      
+      output$outcome_bars <- renderPlotly({
+        p <- datasetInput()$data %>% 
+          filter(events %in% c('home_run', 'triple', 'double', 'single')) %>% 
+          group_by(events) %>% 
+          ggplot(aes(x = events)) +
+          geom_bar() +
+          theme_bw() +
+          theme(axis.text.x = element_text(size=7, angle=15)) + 
+          theme(axis.title.x = element_blank()) +
+          theme(axis.title.y = element_blank()) +
+          ggtitle("Frequencies for On-Base Outcomes") + 
+          theme(plot.title = element_text(size = 10, face = 'bold'))
+        #+
+        # ggsubtitle("Contact Type")
+        
+        
+        ggplotly(p)  %>% 
+          config(displayModeBar = F)
+      })
+    
         
     session$onSessionEnded(stopApp)
 })

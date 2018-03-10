@@ -48,6 +48,10 @@ pitch_type_crosswalk <- data.frame(pitch_type = unique(rizzo_df$pitch_type),
 game_type_crosswalk <- data.frame(game_type = unique(rizzo_df$game_type), 
                                   game_desc = c('NLCS', 'NLDS', 'Regular Season', 'World Series', 'Wild Card'))
 
+#Fill in NAs with 0 or 'No Contact'
+rizzo_df$launch_speed_angle[is.na(rizzo_df$launch_speed_angle)] <- 0
+rizzo_df$hit_location[is.na(rizzo_df$hit_location)] <- 0
+
 # Merge event dataframe with crosswalk
 rizzo_df <- rizzo_df %>% 
   filter(game_year >= 2015) %>% 
@@ -82,7 +86,8 @@ rizzo_df <- rizzo_df %>%
          hit_y_coord = launch_speed * sin(launch_angle * pi / 180),
          homeaway = mapvalues(inning_topbot, c('Top', 'Bot'), c('Away', 'Home')),
          month = format(game_date, '%B'),
-         year = format(game_date, '%Y')) %>% 
+         year = format(game_date, '%Y'),
+         contact_type = mapvalues(launch_speed_angle, c(0,1,2,3,4,5,6), c('No Contact', 'Weak', 'Topped', 'Under', 'Flare/Burner', 'Solid', 'Barrel'))) %>% 
   mutate(season = mapvalues(month, c("March", "April", "May", "June", "July", "August", "September", "October", "November"),
                             c("Spring", "Spring", "Spring", "Summer", "Summer", "Summer", "Fall", "Fall", "Fall")),
           contact_info = mapvalues(description, c('called_strike', 'ball', 'blocked_ball', 'hit_by_pitch', 'intent_ball', 'pitchout', 'automatic_ball', 'hit_into_play', 'hit_into_play_score', 'swinging_strike', 'foul', 'foul_tip', 'hit_into_play_no_out', 'swinging_strike_blocked', 'missed_bunt', 'foul_bunt'), 
@@ -92,12 +97,9 @@ rizzo_df <- rizzo_df %>%
           barreled_ball = pmin(launch_angle_comp * launch_vel_comp, 1),
           #infield_outfield = as.character(cut(rizzo_df$hit_distance_sc, c(-999,110,999), c('Infield', 'Outfield'))),
           spray_angle_cat = as.character(cut(rizzo_df$spray_angle, c(-Inf,-15, 15, Inf), c('Opposite Field', 'Straight-Away', 'Pulled')))) %>% 
-  replace_na(list(spray_angle_cat = 'No Contact'))
+  replace_na(list(spray_angle_cat = 'No Contact')) 
   
 
-#Fill in NAs with 0 or 'No Contact'
-rizzo_df$launch_speed_angle[is.na(rizzo_df$launch_speed_angle)] <- 0
-rizzo_df$hit_location[is.na(rizzo_df$hit_location)] <- 0
 
           # take_or_swing = mapvalues(description, c('hit_into_play', 'hit_into_play_score', 'swinging_strike', 'foul', 'foul_tip', 'hit_into_play_no_out', 'swinging_strike_blocked', 'missed_bunt', 'foul_bunt'), 
           #                   c('swing', 'swing', 'swing', 'swing', 'swing', 'swing', 'swing', 'swing', 'swing'))) 

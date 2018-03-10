@@ -21,8 +21,8 @@ source('exploration.R')
 shinyUI(fluidPage(theme = shinytheme("united"),
 
   # Application title
-  titlePanel("Rizzo Analysis"),
-  
+  titlePanel("Analysis of Anthony Rizzo's Offense (2015-2017)"),
+  h5('Change the filters below to analyze how well Anthony Rizzo hits in certain situations. You can also scroll down to see more information about the plays you have filtered.'),
   # Sidebar with a slider input 
   fluidRow(
     sidebarPanel(
@@ -180,9 +180,12 @@ shinyUI(fluidPage(theme = shinytheme("united"),
         #   plotlyOutput('swing_contact_rates', height = '225px'),
         #   width = 6
         # )
-        column(
+        column(align="center",
+          fluidRow(align='center',
+            tags$b('Swing and Contact Rates', style='padding: 20px; font-face: bold; font-size: 16px')
+          ),
           #NOTE------------think about replacing this with chart of swing rate vs contact rate
-          fluidRow(
+          fluidRow(align="center",
             column(
               textOutput('pitch_count'),
               width = 4
@@ -196,8 +199,12 @@ shinyUI(fluidPage(theme = shinytheme("united"),
               width = 4
             )
           ),
-          textOutput('swing_rate'),
-          textOutput('contact_rate'),
+          fluidRow(
+            tags$b(textOutput('swing_rate'), style="padding:8px; font-size: 14px")
+          ),
+          fluidRow(
+            tags$b(textOutput('contact_rate'), style="padding:8px; font-size: 14px")
+          ),
           width = 6
         )
       ),
@@ -207,11 +214,12 @@ shinyUI(fluidPage(theme = shinytheme("united"),
           plotlyOutput("launchPlot", height = '200px'),
           width = 6
         ),
-        column(
+        column(align="center",
           #textOutput('barrel_pct'),
           #NOTE -------------think about putting chart here of pie chart of contact types
-          textOutput('avg_barrel_pct'),
-          textOutput('tango_barrel_rate'),
+          plotlyOutput('barrel_bars', height = '150px'),
+          tags$b(textOutput('avg_barrel_pct'), style="font-size: 15px"),
+          tags$b(textOutput('tango_barrel_rate'), style="font-size: 15px"),
           width = 6
         )
       ),
@@ -222,6 +230,7 @@ shinyUI(fluidPage(theme = shinytheme("united"),
           width = 6
         ),
         column(
+          plotlyOutput('outcome_bars', height = '200px'),
           width = 6
         )
       ),

@@ -14,6 +14,7 @@ library(plotly)
 library(plyr)
 library(png)
 library(grid)
+library(DT)
 
 source('exploration.R')
 
@@ -50,7 +51,7 @@ shinyServer(function(input, output, session) {
               launch_speed_angle %in% input$ball_flight,
               #hit_location %in% input$field_zone,
               zone %in% input$strikezone,
-              infield_outfield %in% input$infield_outfield,
+              #infield_outfield %in% input$infield_outfield,
               spray_angle_cat %in% input$spray_angle_cat
               )
               
@@ -66,7 +67,7 @@ shinyServer(function(input, output, session) {
     
   
     output$launchPlot <- renderPlotly({
-      req(datasetInput())
+      req(nrow(datasetInput()$data) > 0)
       
       #s <- event_data("plotly_selected")
       
@@ -88,7 +89,9 @@ shinyServer(function(input, output, session) {
         xlim(-120, 5) +
         ylim(-90, 90) +
         coord_fixed() +
-        theme_bw()
+        theme_void() +
+        ggtitle("Launch Chart (Exit Velocity/Launch Angle)") + 
+        theme(plot.title = element_text(size = 10, face = 'bold'))
       
       #obj <- datasetInput()$sel
       #obj
@@ -101,7 +104,7 @@ shinyServer(function(input, output, session) {
     })
     
     output$strikezonePlot <- renderPlotly({
-      req(datasetInput())
+      req(nrow(datasetInput()$data) > 0)
     #  s <- event_data("plotly_selected")
       
       # data <- datasetInput()
@@ -127,13 +130,16 @@ shinyServer(function(input, output, session) {
         geom_point(aes(text = sprintf('<b>Launch Angle:</b> %.1f\n<b>Exit Velocity:</b> %.1f\n<b>Outcome: %s</b>',
                                       round(launch_angle, 1), round(launch_speed, 1), description))) +
         #  legend(legend = pitch_category) +
-        geom_segment(data = sz_box, aes(x = vert_x, y = vert_y, xend = vert_xend, yend = vert_yend, color = I('white')), showlegend = FALSE) +
-        geom_segment(data = sz_box, aes(x = hor_x, y = hor_y, xend = hor_xend, yend = hor_yend, color = I('white')), showlegend = FALSE) +
+        geom_segment(data = sz_box, aes(x = vert_x, y = vert_y, xend = vert_xend, yend = vert_yend, color = I('white')), show.legend = FALSE) +
+        geom_segment(data = sz_box, aes(x = hor_x, y = hor_y, xend = hor_xend, yend = hor_yend, color = I('white')), show.legend = FALSE) +
         #scale_color_manual(limits = )
         xlim(-3, 3) +
         ylim(-2, 6) +
         coord_fixed() +
-        theme_bw()
+        theme_void() +
+        ggtitle("Strike Zone Chart (Catcher's Perspective)") + 
+        theme(plot.title = element_text(size = 10, face = 'bold')) +
+        scale_fill_manual(values = c('purple', 'darkred', 'red', 'lightgreen'), limits = c('take', 'missed swing', 'foul', 'contact'))
       
         # obj <- datasetInput()$sel
         # obj
@@ -142,9 +148,13 @@ shinyServer(function(input, output, session) {
         #   p <- p + geom_point(data = obj, size = 4)
         # }
         
-        ggplotly(p, tooltip = 'text') #%>%
+        ggplotly(p, tooltip = 'text') %>%
+          layout( 
+            legend = list(x = -1, y = 0.95)
+          ) 
+          
           #layout(dragmode = 'lasso')
-  
+        
       
       
       
@@ -172,7 +182,27 @@ shinyServer(function(input, output, session) {
       
     })  
     
-  
+    # output$swing_contact_rates <- renderPlotly({
+    #   req(datasetInput())
+    #   
+    #   data <- data.frame(x = swing_count()$swing_count/pitch_count()$pitch_count*100, 
+    #                      y = contact_count()$contact_count/swing_count()$swing_count*100)
+    #   
+    #   
+    #   p <- ggplot(data = data, aes(x = x, y = y))  +
+    #     #geom_circle(aes(x0 = 0, y0 = 0, r = 50, fill = 'blue', alpha = 0.1), show.legend = FALSE) +
+    #     geom_point(
+    #       aes(size = swing_count()$swing_count, text = sprintf('<b>Swing Rate:</b> %.1f%%\n<b>Contact Rate:</b> %.1f%%',
+    #                                   x, y))
+    #       ) +
+    #   
+    #     xlim(-1, 101) +
+    #     ylim(-1, 101) +
+    #     coord_fixed() +
+    #     theme_bw()
+    #   
+    #   ggplotly(p, tooltip = 'text')
+    # })
     
     
     
@@ -187,11 +217,10 @@ shinyServer(function(input, output, session) {
       #   
       #   #cat(str(data))
       # }  
-      req(datasetInput())
+      req(nrow(datasetInput()$data) > 0)
       
       p <- ggplot(data = datasetInput()$data, aes(x = hc_x, y = hc_y, color = bb_type, 
-                   text = sprintf('<b>Launch Angle:</b> %.1f\n<b>Exit Velocity:</b> %.1f\n<b>Outcome: %s</b>',
-                                  round(launch_angle, 1), round(launch_speed, 1), description)))  +
+                   text = sprintf('<b>Change this!</b>')))  +
         #geom_circle(aes(x0 = 0, y0 = 0, r = 50, fill = 'blue', alpha = 0.1), show.legend = FALSE) +
         geom_point(aes(alpha = 0.2), show.legend = FALSE) +
         #  legend(legend = pitch_category) +
@@ -199,7 +228,9 @@ shinyServer(function(input, output, session) {
         xlim(min(rizzo_df$hc_x, na.rm = TRUE), max(rizzo_df$hc_x, na.rm = TRUE)) +
         ylim(min(rizzo_df$hc_y, na.rm = TRUE), max(rizzo_df$hc_y, na.rm = TRUE)) +
         coord_equal() +
-        theme_bw()
+        theme_void() +
+        ggtitle("Spray Chart (Aerial View)") + 
+        theme(plot.title = element_text(size = 10, face = 'bold'))
       
       ggplotly(p, tooltip = 'text') #%>% 
         #layout(dragmode = 'lasso')    
@@ -275,6 +306,21 @@ shinyServer(function(input, output, session) {
       paste("Tango Barrel Rate: ", round(tango_barrel_count()/contact_count()*100, 2), ' / 100 balls in play')
     })
     
+    output$datatable <- DT::renderDataTable({
+      DT::datatable(datasetInput()$data[, c('game_date', 
+                                            'inning_topbot', 
+                                            'inning', 
+                                            'balls', 
+                                            'strikes', 
+                                            'outs_when_up', 
+                                            'pitcher_name', 
+                                            'events',
+                                            'description'), 
+                                        drop = FALSE],
+                    colnames = c('Game Date','Top/Bottom of Inning', 'Inning', 'Balls', 'Strikes', 'Outs',
+                                 'Pitcher', 'Event', 'Description'))
+    })
+        
     session$onSessionEnded(stopApp)
 })
 

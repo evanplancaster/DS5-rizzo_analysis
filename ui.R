@@ -12,13 +12,13 @@ library(tidyverse)
 library(readr)
 library(plyr)
 library(plotly)
-
+library(shinythemes)
 
 source('exploration.R')
 
 
 # Define UI for application that draws a histogram
-shinyUI(fluidPage(
+shinyUI(fluidPage(theme = shinytheme("united"),
 
   # Application title
   titlePanel("Rizzo Analysis"),
@@ -173,22 +173,38 @@ shinyUI(fluidPage(
     mainPanel(
       fluidRow(
         column(
-          plotlyOutput("strikezonePlot", height = '225px'),
+          plotlyOutput("strikezonePlot", height = '200px'),
           width = 6
           ),
+        # column(
+        #   plotlyOutput('swing_contact_rates', height = '225px'),
+        #   width = 6
+        # )
         column(
           #NOTE------------think about replacing this with chart of swing rate vs contact rate
-          textOutput('pitch_count'),
-          textOutput('swing_count'),
-          textOutput('contact_count'),
+          fluidRow(
+            column(
+              textOutput('pitch_count'),
+              width = 4
+            ),
+            column(
+              textOutput('swing_count'),
+              width = 4
+            ),
+            column(
+              textOutput('contact_count'),
+              width = 4
+            )
+          ),
           textOutput('swing_rate'),
           textOutput('contact_rate'),
           width = 6
         )
       ),
+      hr(),
       fluidRow(
         column(
-          plotlyOutput("launchPlot", height = '225px'),
+          plotlyOutput("launchPlot", height = '200px'),
           width = 6
         ),
         column(
@@ -199,13 +215,13 @@ shinyUI(fluidPage(
           width = 6
         )
       ),
+      hr(),
       fluidRow(
         column(
-          plotlyOutput("spraychartPlot", height = '225px'),
+          plotlyOutput("spraychartPlot", height = '200px'),
           width = 6
         ),
         column(
-          
           width = 6
         )
       ),
@@ -244,15 +260,19 @@ shinyUI(fluidPage(
                   multiple = TRUE,
                   selectize = FALSE,
                   width = '200px'),
-      selectInput("infield_outfield",
-                  'Depth:',
-                  choices = c('Infield', 'Outfield', 'No Contact'),
-                  selected = c('Infield', 'Outfield', 'No Contact'),
-                  multiple = TRUE,
-                  selectize = FALSE,
-                  width = '200px'),
+      # selectInput("infield_outfield",
+      #             'Depth:',
+      #             choices = c('Infield', 'Outfield', 'No Contact'),
+      #             selected = c('Infield', 'Outfield', 'No Contact'),
+      #             multiple = TRUE,
+      #             selectize = FALSE,
+      #             width = '200px'),
       width = 3
     )
+  ),
+  fluidRow(style = "overflow:scroll",
+    DT::dataTableOutput("datatable"),
+    width = 12
   )
 ))
 

@@ -139,7 +139,7 @@ shinyUI(fluidPage(theme = shinytheme("united"),
                       choices = na.exclude(unique(rizzo_df$pitch_name)),
                       selected = na.exclude(unique(rizzo_df$pitch_name)),
                       multiple = TRUE,
-                      selectize = FALSE,
+                      selectize = TRUE,
                       #size = 3,
                       width = '200px')
         ),

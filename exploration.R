@@ -56,7 +56,7 @@ rizzo_df$hit_location[is.na(rizzo_df$hit_location)] <- 0
 rizzo_df <- rizzo_df %>% 
   filter(game_year >= 2015) %>% 
   mutate(hc_x = hc_x - 125.42, hc_y = 198.27 - hc_y) %>% 
-  mutate(spray_angle = round(atan((hc_x)/(hc_y))*180/pi),1) %>% 
+  mutate(spray_angle = round(atan((hc_x)/(hc_y))*180/pi,1)) %>% 
   mutate(launch_z = launch_speed * sin(launch_angle*pi/180)) %>% 
   merge(pitch_type_crosswalk) %>% 
   merge(game_type_crosswalk) %>% 

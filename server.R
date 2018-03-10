@@ -81,9 +81,8 @@ shinyServer(function(input, output, session) {
       # }  
       
       p <- ggplot(data = datasetInput()$data, aes(x = hit_x_coord, y = hit_y_coord, 
-                                                  text = paste('<br>Angle: ', launch_angle, 
-                                                               '<br>Speed: ', launch_speed, 
-                                                               '<br>Barrel %: ', round(100 * barreled_ball, 3)), 
+                                                  text = paste('Barrel %: ', round(100 * barreled_ball, 3),
+                                                                      '<br>Outcome: ', description),
                                                   color = barreled_ball)) + 
         geom_point() +
         xlim(-120, 5) +
@@ -128,8 +127,8 @@ shinyServer(function(input, output, session) {
       
       p <- ggplot(data = datasetInput()$data, aes(x = plate_x, y = plate_z, color = contact_info, alpha = 0.2))  +
         #geom_circle(aes(x0 = 0, y0 = 0, r = 50, fill = 'blue', alpha = 0.1), show.legend = FALSE) +
-        geom_point(aes(text = sprintf('<b>Launch Angle:</b> %.1f\n<b>Exit Velocity:</b> %.1f\n<b>Outcome: %s</b>',
-                                      round(launch_angle, 1), round(launch_speed, 1), description))) +
+        geom_point(aes(text = paste('Barrel %: ', round(100 * barreled_ball, 3),
+                                    '<br>Outcome: ', description))) +
         #  legend(legend = pitch_category) +
         geom_segment(data = sz_box, aes(x = vert_x, y = vert_y, xend = vert_xend, yend = vert_yend, color = I('white')), show.legend = FALSE) +
         guides(color = 'none') +
@@ -141,7 +140,8 @@ shinyServer(function(input, output, session) {
         coord_fixed() +
         theme_void() +
         ggtitle("Strike Zone Chart (Catcher's Perspective)") + 
-        theme(plot.title = element_text(size = 10, face = 'bold'))
+        theme(plot.title = element_text(size = 10, face = 'bold')) +
+        scale_fill_discrete(name="Barrel Percent")
       
         # obj <- datasetInput()$sel
         # obj
@@ -223,7 +223,8 @@ shinyServer(function(input, output, session) {
       req(nrow(datasetInput()$data) > 0)
       
       p <- ggplot(data = datasetInput()$data, aes(x = hc_x, y = hc_y, color = bb_type, 
-                   text = sprintf('<b>Change this!</b>')))  +
+                                                  text = paste('Barrel %: ', round(100 * barreled_ball, 3),
+                                                               '<br>Outcome: ', description)))  +
         #geom_circle(aes(x0 = 0, y0 = 0, r = 50, fill = 'blue', alpha = 0.1), show.legend = FALSE) +
         geom_point(aes(alpha = 0.2), show.legend = FALSE) +
         #  legend(legend = pitch_category) +
@@ -275,15 +276,15 @@ shinyServer(function(input, output, session) {
     })
     
     output$swing_count <- renderText({
-      paste("# Swings:\n\n", swing_count())
+      paste("# Swings:\n", swing_count())
     })
     
     output$pitch_count <- renderText({
-      paste("# Pitches:\n\n", pitch_count())
+      paste("# Pitches:\n", pitch_count())
     })
     
     output$contact_count <- renderText({
-      paste("# Contacts:\n\n", contact_count())
+      paste("# Contacts:\n", contact_count())
     })
     
     output$contact_rate <- renderText({
@@ -319,10 +320,11 @@ shinyServer(function(input, output, session) {
                                             'outs_when_up', 
                                             'pitcher_name', 
                                             'events',
+                                            'barreled_ball',
                                             'des'), 
                                         drop = FALSE],
                     colnames = c('Game Date','Top/Bottom of Inning', 'Inning', 'Balls', 'Strikes', 'Outs',
-                                 'Pitcher', 'Event', 'Description'))
+                                 'Pitcher', 'Event', 'Barrel %' , 'Description'))
     })
     
     output$barrel_bars <- renderPlotly({
